@@ -1,0 +1,18 @@
+services:
+  airsync:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: airsync-app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.example
+    environment:
+      - DB_PATH=/data/airsync.db
+    volumes:
+      - airsync-data:/data
+    restart: unless-stopped
+
+volumes:
+  airsync-data:

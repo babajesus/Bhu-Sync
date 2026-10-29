@@ -1,0 +1,1490 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AIRSYNC · AI Air Operations Decision Support &amp; Resource Optimisation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #070b14;
+      --card-bg: rgba(13, 22, 40, 0.82);
+      --card-border: rgba(56, 189, 248, 0.18);
+      --card-hover: rgba(56, 189, 248, 0.35);
+      --text: #e2e8f0;
+      --text-muted: #8494b0;
+      --text-dim: #475569;
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.4);
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.4);
+      --warning: #f59e0b;
+      --warning-glow: rgba(245, 158, 11, 0.3);
+      --danger: #f43f5e;
+      --danger-glow: rgba(244, 63, 94, 0.35);
+      --accent: #818cf8;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      background: var(--bg);
+      background-image: 
+        radial-gradient(circle at 12% 10%, rgba(56, 189, 248, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 88% 88%, rgba(129, 140, 248, 0.07) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.03) 0%, transparent 60%);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 13px;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(10, 16, 30, 0.6); }
+    ::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.25); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(56, 189, 248, 0.5); }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 24px;
+      background: rgba(8, 13, 26, 0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 14px var(--primary-glow);
+    }
+    .brand-icon svg { width: 20px; height: 20px; fill: white; }
+    h1 {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    h1 span {
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .sub {
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.5px;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 12px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--success);
+      letter-spacing: 0.8px;
+    }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.85); }
+    }
+
+    .sim-tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 5px 10px;
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.22);
+      border-radius: 6px;
+      color: var(--primary);
+    }
+    .synthetic-tag {
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 4px 9px;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      border-radius: 4px;
+      color: var(--warning);
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .sp { flex: 1; }
+
+    /* Prominent Action Buttons */
+    .btn-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    button {
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      background: rgba(14, 165, 233, 0.12);
+      color: #fff;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.2s ease;
+    }
+    button:hover {
+      background: rgba(14, 165, 233, 0.25);
+      border-color: var(--primary);
+      box-shadow: 0 0 14px var(--primary-glow);
+      transform: translateY(-1px);
+    }
+    button:active { transform: translateY(0); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* SUPER PROMINENT DEMO BUTTON */
+    button.btn-demo-primary {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      padding: 9px 18px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+      border: 1.5px solid #34d399;
+      color: #ffffff;
+      box-shadow: 0 0 18px var(--success-glow);
+      animation: demo-beacon 2.5s infinite;
+    }
+    button.btn-demo-primary:hover {
+      background: linear-gradient(135deg, #047857 0%, #059669 100%);
+      box-shadow: 0 0 28px rgba(16, 185, 129, 0.65);
+      transform: translateY(-2px);
+    }
+    @keyframes demo-beacon {
+      0%, 100% { box-shadow: 0 0 16px rgba(16, 185, 129, 0.4); }
+      50% { box-shadow: 0 0 26px rgba(16, 185, 129, 0.75); }
+    }
+
+    button.btn-amber {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.4);
+      color: #fef3c7;
+    }
+    button.btn-amber:hover {
+      background: rgba(245, 158, 11, 0.3);
+      border-color: var(--warning);
+    }
+    button.btn-outline {
+      background: transparent;
+      border-color: var(--card-border);
+      color: var(--text-muted);
+    }
+    button.btn-outline:hover {
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    /* System Banner */
+    #banner {
+      display: none;
+      padding: 12px 24px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      border-bottom: 2px solid var(--primary);
+      background: rgba(14, 165, 233, 0.22);
+      backdrop-filter: blur(12px);
+      transition: all 0.3s ease;
+    }
+    #banner.bad {
+      background: rgba(244, 63, 94, 0.28);
+      border-bottom-color: var(--danger);
+      color: #fecdd3;
+    }
+    #banner.ok {
+      background: rgba(16, 185, 129, 0.28);
+      border-bottom-color: var(--success);
+      color: #d1fae5;
+    }
+
+    /* Fusion Pipeline Bar */
+    .fusion-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 8px 24px;
+      background: rgba(10, 16, 32, 0.7);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 11px;
+    }
+    .sources-chips {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .source-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+    }
+    .source-chip b { color: var(--success); font-weight: 600; font-size: 10px; }
+    .source-chip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
+    .pipeline-steps {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--primary);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.5px;
+    }
+    .pipeline-steps span { color: var(--text-dim); }
+
+    /* KPI Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 12px;
+      padding: 16px 24px 8px;
+    }
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      backdrop-filter: blur(12px);
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-card:hover {
+      border-color: var(--card-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--primary), transparent);
+      opacity: 0.45;
+    }
+    .kpi-card small {
+      display: block;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .kpi-card b {
+      display: block;
+      font-size: 22px;
+      font-family: var(--mono);
+      font-weight: 700;
+      color: #fff;
+    }
+    .kpi-card b.danger-val { color: var(--danger); text-shadow: 0 0 10px var(--danger-glow); }
+    .kpi-card i {
+      display: block;
+      margin-top: 4px;
+      font-style: normal;
+      color: var(--warning);
+      font-size: 10px;
+      font-family: var(--mono);
+    }
+
+    /* Main Grid Layout */
+    main {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+      padding: 16px 24px 32px;
+    }
+    .c {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      backdrop-filter: blur(12px);
+      overflow: auto;
+      max-height: 490px;
+      position: relative;
+    }
+    .c:hover { border-color: var(--card-hover); }
+    .c h3 {
+      margin: 0 0 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--primary);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .c h3 .badge {
+      font-size: 9px;
+      font-family: var(--mono);
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--primary);
+    }
+
+    .s12 { grid-column: span 12; }
+    .s8 { grid-column: span 8; }
+    .s6 { grid-column: span 6; }
+    .s4 { grid-column: span 4; }
+    .s3 { grid-column: span 3; }
+
+    @media (max-width: 1200px) {
+      .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+      .s8, .s4, .s6, .s3 { grid-column: span 12 !important; }
+    }
+    @media (max-width: 700px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* Watermark for Tactical Map */
+    .synthetic-banner-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 12px;
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-radius: var(--radius-sm);
+      margin-bottom: 10px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--warning);
+      letter-spacing: 1px;
+    }
+
+    /* Tactical Map SVG */
+    #map {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: var(--radius-sm);
+      background: rgba(4, 8, 18, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.15);
+    }
+
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th {
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.22);
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: rgba(8, 14, 28, 0.6);
+    }
+    td {
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-family: var(--sans);
+    }
+    tr.t { cursor: pointer; transition: background 0.15s ease; }
+    tr.t:hover { background: rgba(56, 189, 248, 0.09); }
+    tr.t.active-row { background: rgba(56, 189, 248, 0.18); border-left: 3px solid var(--primary); }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .pill-success { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.35); }
+    .pill-danger { background: rgba(244, 63, 94, 0.15); color: var(--danger); border: 1px solid rgba(244, 63, 94, 0.35); }
+    .pill-warning { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.35); }
+    .pill-info { background: rgba(56, 189, 248, 0.15); color: var(--primary); border: 1px solid rgba(56, 189, 248, 0.35); }
+
+    /* Retasking Pipeline (6 Stages) */
+    .pipe {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .pipe > div {
+      background: rgba(9, 15, 30, 0.8);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      padding: 9px 10px;
+      font-size: 11px;
+      transition: all 0.25s ease;
+    }
+    .pipe > div.highlight-stage {
+      border-color: var(--primary);
+      box-shadow: 0 0 12px var(--primary-glow);
+      background: rgba(56, 189, 248, 0.15);
+    }
+    .pipe b {
+      display: block;
+      color: var(--primary);
+      font-size: 10px;
+      font-family: var(--mono);
+      margin-bottom: 4px;
+    }
+
+    .tl > div {
+      border-left: 2px solid rgba(56, 189, 248, 0.2);
+      padding: 0 0 6px 12px;
+      margin-left: 4px;
+      position: relative;
+    }
+    .tl > div::before {
+      content: '';
+      position: absolute;
+      left: -5px;
+      top: 4px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+    .tl .e { border-left-color: var(--primary); margin-top: 8px; }
+    .tl .e::before { background: var(--success); box-shadow: 0 0 8px var(--success-glow); }
+
+    /* Form Sliders */
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      background: rgba(56, 189, 248, 0.2);
+      border-radius: 2px;
+      outline: none;
+      margin: 6px 0 10px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+      box-shadow: 0 0 8px var(--primary-glow);
+      transition: transform 0.1s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+    
+    label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    label b {
+      color: #fff;
+      font-family: var(--mono);
+    }
+
+    select {
+      background: rgba(9, 15, 30, 0.9);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 11px;
+      padding: 5px 8px;
+      border-radius: var(--radius-sm);
+      outline: none;
+    }
+
+    .diff-box {
+      margin-top: 10px;
+      padding: 10px;
+      background: rgba(4, 9, 20, 0.7);
+      border: 1px solid rgba(56, 189, 248, 0.15);
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+    }
+
+    /* Colors utility */
+    .g { color: var(--success); }
+    .r { color: var(--danger); }
+    .y { color: var(--warning); }
+    .m { color: var(--text-muted); }
+    .mono { font-family: var(--mono); }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zm0 4.5l6.5 13.5H5.5L12 6.5z"/></svg>
+      </div>
+      <div>
+        <h1>AIRSYNC <span>TACTICAL AI</span></h1>
+        <div class="sub">AI Air Operations Decision Support &amp; Resource Optimisation</div>
+      </div>
+    </div>
+
+    <div class="status-badge" id="net-status">
+      <div class="pulse-dot"></div>
+      <span>SYSTEM ONLINE</span>
+    </div>
+
+    <div class="sim-tag">
+      SIMULATION: <b id="sm">PAUSED</b>
+    </div>
+
+    <div class="synthetic-tag">
+      SYNTHETIC DATA / DEMO ENVIRONMENT
+    </div>
+
+    <div class="m mono" style="font-size: 11px;">
+      SYNC: <span id="lu">-</span>
+    </div>
+
+    <div class="sp"></div>
+
+    <div class="btn-group">
+      <!-- MOST PROMINENT DEMO BUTTON -->
+      <button id="btn-run-demo" class="btn-demo-primary" onclick="demo()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        RUN DEMO SCENARIO
+      </button>
+
+      <button id="btn-run-opt" onclick="run()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+        RUN OPTIMISATION
+      </button>
+
+      <button id="btn-sim-start" class="btn-outline" onclick="sim('start')">START SIMULATION</button>
+      <button id="btn-sim-pause" class="btn-amber" onclick="sim('pause')">PAUSE</button>
+      <button id="btn-sim-reset" class="btn-outline" onclick="sim('reset')">RESET</button>
+    </div>
+  </header>
+
+  <!-- Notification Banner -->
+  <div id="banner"></div>
+
+  <!-- Realtime Data Fusion & Pipeline Header -->
+  <div class="fusion-bar">
+    <div class="sources-chips" id="src-chips">
+      <!-- Generated via JS -->
+    </div>
+    <div class="pipeline-steps">
+      <b>SOURCE DATA</b> <span>→</span>
+      <b>NORMALIZATION</b> <span>→</span>
+      <b>DATA FUSION</b> <span>→</span>
+      <b>OPERATIONAL STATE</b> <span>→</span>
+      <b>OPTIMIZATION</b> <span>→</span>
+      <b>EXPLAINABLE AI</b>
+    </div>
+  </div>
+
+  <!-- KPI Cards Grid -->
+  <div class="kpi-grid" id="kpi">
+    <!-- Populated via dKpi() -->
+  </div>
+
+  <!-- Main Multi-Panel Workspace -->
+  <main>
+    <!-- Tactical Operational Grid Map -->
+    <div class="c s8">
+      <h3>
+        Operational Overview · Fictional Sectors
+        <span class="badge">FICTIONAL / SYNTHETIC ENVIRONMENT</span>
+      </h3>
+      <div class="synthetic-banner-strip">
+        <span>⚠ FICTIONAL ENVIRONMENT</span>
+        <span>SYNTHETIC TELEMETRY ONLY</span>
+        <span>NO REAL-WORLD TARGETING / LOCATIONS</span>
+      </div>
+      <svg id="map" viewBox="0 0 640 310" width="100%"></svg>
+    </div>
+
+    <!-- Active Conflicts & Fusion Pipeline -->
+    <div class="c s4">
+      <h3>
+        Active Conflicts &amp; Inconsistencies
+        <span class="badge" id="cf-badge">0 CONFLICTS</span>
+      </h3>
+      <div id="cf" style="margin-bottom: 16px;"></div>
+
+      <h3>
+        Unified Data Sources &amp; Fusion Status
+      </h3>
+      <div id="src"></div>
+    </div>
+
+    <!-- Task Allocation Table -->
+    <div class="c s8">
+      <h3>
+        Task Allocation (Select row to view Explainer)
+        <span class="badge" id="task-badge">18 TASKS</span>
+      </h3>
+      <div id="tt"></div>
+    </div>
+
+    <!-- Decision Explainer -->
+    <div class="c s4">
+      <h3>
+        Explainable AI · Decision Explainer
+        <span class="badge">XAI REASONING</span>
+      </h3>
+      <div id="ex" class="m">Click any task in the allocation table to inspect AI factors, constraints, and alternatives.</div>
+    </div>
+
+    <!-- Dynamic Retasking Pipeline & Timeline -->
+    <div class="c s8">
+      <h3>
+        Dynamic Retasking &amp; Disruption Simulator
+        <div style="display:flex;align-items:center;gap:6px;">
+          <select id="ek">
+            <option value="aircraft_unavailable">Resource Unavailable</option>
+            <option value="weather">Severe Weather Event</option>
+            <option value="airspace">Airspace Restricted</option>
+            <option value="crew_unavailable">Crew Unavailable</option>
+            <option value="maintenance">Maintenance Block</option>
+            <option value="priority">Escalate Priority</option>
+            <option value="new_task">New Priority-5 Task</option>
+          </select>
+          <button id="btn-gen-event" onclick="gen()">GENERATE EVENT</button>
+        </div>
+      </h3>
+      <div id="rt"></div>
+    </div>
+
+    <!-- Optimization Weights Control -->
+    <div class="c s4">
+      <h3>
+        Multi-Factor Optimization Controls
+        <span class="badge">WEIGHTS</span>
+      </h3>
+      <div id="wsl"></div>
+      <button id="btn-apply-weights" style="width:100%;margin-top:4px;" onclick="run()">APPLY WEIGHTS &amp; RE-OPTIMISE</button>
+      <div id="cmp" class="diff-box">
+        <span class="m">Adjust sliders and click re-optimise to view allocation delta.</span>
+      </div>
+    </div>
+
+    <!-- Predictive Analytics (Random Forest) -->
+    <div class="c s4">
+      <h3>
+        Predictive Maintenance &amp; Readiness
+        <span class="badge">RANDOM FOREST</span>
+      </h3>
+      <div id="pr"></div>
+    </div>
+
+    <!-- Anomaly Detection (Isolation Forest + Rules) -->
+    <div class="c s4">
+      <h3>
+        Operational Anomalies Detected
+        <span class="badge">ISOLATION FOREST + RULES</span>
+      </h3>
+      <div id="an"></div>
+    </div>
+
+    <!-- Before vs After Comparison Card -->
+    <div class="c s4">
+      <h3>
+        Before vs Now Operational Delta
+        <span class="badge">DELTA ANALYSIS</span>
+      </h3>
+      <div id="ba"></div>
+    </div>
+
+    <!-- Tactical Metrics Charts -->
+    <div class="c s3">
+      <h3>Utilisation by Type</h3>
+      <div id="c1"></div>
+    </div>
+    <div class="c s3">
+      <h3>Readiness Distribution</h3>
+      <div id="c2"></div>
+    </div>
+    <div class="c s3">
+      <h3>Task Priority Spread</h3>
+      <div id="c3"></div>
+    </div>
+    <div class="c s3">
+      <h3>Optimization Score History</h3>
+      <div id="c4"></div>
+    </div>
+
+    <!-- System Audit Log & Timeline -->
+    <div class="c s6">
+      <h3>
+        Persistent Audit Trail
+        <span class="badge">SQLITE RECORD</span>
+      </h3>
+      <div id="au" class="tl"></div>
+    </div>
+
+    <div class="c s6">
+      <h3>
+        Event Stream Timeline
+        <span class="badge">TELEMETRY</span>
+      </h3>
+      <div id="ev"></div>
+    </div>
+  </main>
+
+  <script>
+    const A = '/api/v1',
+          $ = id => document.getElementById(id),
+          sleep = ms => new Promise(r => setTimeout(r, ms));
+
+    // Safe API client with error handling
+    const G = async u => {
+      try {
+        const res = await fetch(A + u);
+        if (!res.ok) throw new Error(`HTTP ${res.status} on ${u}`);
+        clearOfflineAlert();
+        return await res.json();
+      } catch (err) {
+        showOfflineAlert(err.message);
+        throw err;
+      }
+    };
+
+    const P = async (u, b) => {
+      try {
+        const res = await fetch(A + u, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: b ? JSON.stringify(b) : undefined
+        });
+        if (!res.ok) {
+          const errBody = await res.json().catch(() => ({}));
+          const msg = errBody.detail || `HTTP ${res.status}`;
+          banner(`Error on ${u}: ${msg}`, 'bad');
+          throw new Error(msg);
+        }
+        clearOfflineAlert();
+        return await res.json();
+      } catch (err) {
+        if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('NetworkError'))) {
+          showOfflineAlert('Server unreachable. Ensure FastAPI backend is running on port 8000.');
+        }
+        throw err;
+      }
+    };
+
+    function showOfflineAlert(msg) {
+      $('net-status').innerHTML = '<div class="pulse-dot" style="background:#f43f5e;box-shadow:0 0 8px #f43f5e"></div><span style="color:#f43f5e">OFFLINE / RETRYING</span>';
+    }
+    function clearOfflineAlert() {
+      $('net-status').innerHTML = '<div class="pulse-dot"></div><span>SYSTEM ONLINE</span>';
+    }
+
+    const WK = ['priority', 'readiness', 'availability', 'deadline', 'risk', 'weather'],
+          TY = ['Transport', 'Surveillance', 'Utility', 'Rotary'];
+
+    let W = {priority: 0.30, readiness: 0.20, availability: 0.20, deadline: 0.15, risk: 0.15, weather: 0.10},
+        S = {},
+        base = null,
+        busy = false,
+        selectedTask = null;
+
+    // Render Weights Sliders
+    $('wsl').innerHTML = WK.map(k => `
+      <div>
+        <label>${k.toUpperCase()} <b id="v${k}">${W[k]}</b></label>
+        <input type="range" min="0" max="1" step="0.05" value="${W[k]}" oninput="W['${k}']=+this.value;$('v${k}').innerText=this.value">
+      </div>
+    `).join('');
+
+    const kp = () => ({
+      avail: S.s ? S.s.available : 0,
+      ready: S.s ? S.s.ready : 0,
+      tasks: S.s ? S.s.tasks : 0,
+      assigned: S.o ? S.o.assignments.length : 0,
+      un: S.o ? S.o.unassigned.length : 0,
+      util: S.o && S.o.kpi ? S.o.kpi.utilization : 0,
+      score: S.o ? S.o.score : 0,
+      cf: S.o && S.o.conflicts ? S.o.conflicts.length : 0
+    });
+
+    const NM = {
+      avail: 'Available Resources',
+      ready: 'Ready Resources',
+      tasks: 'Active Tasks',
+      assigned: 'Assigned Tasks',
+      un: 'Unassigned Tasks',
+      util: 'Resource Utilisation',
+      score: 'Optimization Score',
+      cf: 'Active Conflicts'
+    };
+
+    const f = (k, v) => k === 'util' ? Math.round(v * 100) + '%' : k === 'score' ? (+v).toFixed(2) : v;
+
+    function banner(t, c) {
+      const b = $('banner');
+      b.style.display = t ? 'block' : 'none';
+      b.className = c || '';
+      b.innerText = t || '';
+    }
+
+    async function refresh() {
+      const U = [
+        '/dashboard/summary',
+        '/optimization/latest',
+        '/tasks',
+        '/resources',
+        '/weather',
+        '/airspace',
+        '/risks',
+        '/analytics/readiness',
+        '/analytics/anomalies',
+        '/audit',
+        '/events',
+        '/fusion'
+      ];
+      try {
+        const r = await Promise.all(U.map(G));
+        [S.s, S.o, S.t, S.ac, S.wx, S.ai, S.rk, S.pr, S.an, S.au, S.ev, S.fu] = r;
+        draw();
+        $('lu').innerText = new Date().toLocaleTimeString();
+        $('sm').innerText = S.s.simulation ? 'LIVE' : 'PAUSED';
+      } catch (err) {
+        console.error('Refresh warning:', err);
+      }
+    }
+
+    function draw() {
+      if (!S.o) return;
+      dKpi();
+      dSourcesBar();
+      dMap();
+      dCf();
+      dTasks();
+      dRet();
+      dCharts();
+      dBA();
+      dPred();
+      dAn();
+      dAu();
+      if (selectedTask) exp(selectedTask);
+    }
+
+    function dSourcesBar() {
+      if (!S.fu || !S.fu.sources) return;
+      $('src-chips').innerHTML = S.fu.sources.map(s => `
+        <div class="source-chip">
+          <div class="dot"></div>
+          <span>${s.name}</span>
+          <b>ONLINE</b>
+        </div>
+      `).join('');
+    }
+
+    function dKpi() {
+      const k = kp();
+      $('kpi').innerHTML = Object.keys(NM).map(x => `
+        <div class="kpi-card">
+          <small>${NM[x]}</small>
+          <b class="${x === 'cf' && k.cf ? 'danger-val' : ''}">${f(x, k[x])}</b>
+          ${base ? `<i>prev: ${f(x, base[x])}</i>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function dMap() {
+      if (!S.wx || !S.o) return;
+      const R = Object.keys(S.wx), asg = {};
+      S.o.assignments.forEach(a => asg[a.task] = a);
+      const cx = i => 16 + (i % 4) * 154,
+            cy = i => 22 + Math.floor(i / 4) * 134,
+            tc = {}, ac = {};
+      let h = '';
+
+      // Subtle Background Watermark inside SVG
+      h += `
+        <text x="320" y="160" text-anchor="middle" font-size="15" font-weight="700" 
+              fill="rgba(56, 189, 248, 0.05)" font-family="JetBrains Mono" letter-spacing="3">
+          FICTIONAL · SYNTHETIC GRID · DEMO ONLY
+        </text>
+      `;
+
+      // Draw Grid Regions
+      R.forEach((r, i) => {
+        const rs = S.ai[r] === 'restricted',
+              sev = S.wx[r];
+        h += `
+          <rect x="${cx(i)}" y="${cy(i)}" width="144" height="126" rx="8" 
+                fill="rgba(245, 158, 11, ${sev * 0.35})" 
+                stroke="${rs ? '#f43f5e' : 'rgba(56, 189, 248, 0.2)'}" 
+                stroke-width="${rs ? 2 : 1}" 
+                ${rs ? 'stroke-dasharray="6 4"' : ''}/>
+          <text x="${cx(i) + 8}" y="${cy(i) + 16}" fill="#94a3b8" font-size="10" font-weight="600" font-family="JetBrains Mono">${r}</text>
+          <text x="${cx(i) + 38}" y="${cy(i) + 16}" fill="${rs ? '#f43f5e' : '#38bdf8'}" font-size="9" font-family="JetBrains Mono">${rs ? 'RESTRICTED' : 'OPEN'}</text>
+          <text x="${cx(i) + 104}" y="${cy(i) + 16}" fill="#f59e0b" font-size="9" font-family="JetBrains Mono">wx ${Math.round(sev * 100)}%</text>
+          <text x="${cx(i) + 8}" y="${cy(i) + 114}" fill="#64748b" font-size="8" font-family="JetBrains Mono">Risk ${Math.round(S.rk[r] * 100)}%</text>
+          <rect x="${cx(i) + 8}" y="${cy(i) + 118}" width="${128 * S.rk[r]}" height="3" rx="1.5" fill="#f43f5e"/>
+        `;
+      });
+
+      // Draw Task Nodes
+      S.t.forEach(t => {
+        const i = R.indexOf(t.region),
+              n = tc[i] = (tc[i] || 0) + 1,
+              x = cx(i) + 10 + ((n - 1) % 7) * 18,
+              y = cy(i) + 26,
+              a = asg[t.id];
+        h += `
+          <rect x="${x}" y="${y}" width="15" height="15" rx="3" 
+                fill="${a ? 'rgba(56, 189, 248, 0.25)' : 'rgba(244, 63, 94, 0.2)'}" 
+                stroke="${a ? '#38bdf8' : '#f43f5e'}" stroke-width="1.5">
+            <title>${t.id} [${t.category}] Priority ${t.priority} &#10;Deadline: ${t.deadline}h &#10;Assigned: ${a ? a.aircraft : 'UNASSIGNED'}</title>
+          </rect>
+          <text x="${x + 4}" y="${y + 11}" font-size="9" font-weight="700" fill="${a ? '#38bdf8' : '#f43f5e'}" font-family="JetBrains Mono">${t.priority}</text>
+        `;
+      });
+
+      // Draw Aircraft Blips
+      const used = new Set(S.o.assignments.map(a => a.aircraft));
+      S.ac.forEach(a => {
+        const i = R.indexOf(a.region),
+              n = ac[i] = (ac[i] || 0) + 1,
+              x = cx(i) + 18 + ((n - 1) % 6) * 20,
+              y = cy(i) + 68 + Math.floor((n - 1) / 6) * 20,
+              bad = a.status !== 'available' || a.maintenance === 'blocked';
+        h += `
+          <circle cx="${x}" cy="${y}" r="6.5" 
+                  fill="${bad ? '#f43f5e' : used.has(a.id) ? '#38bdf8' : '#10b981'}" 
+                  stroke="${used.has(a.id) ? '#fff' : 'rgba(0,0,0,0.5)'}" stroke-width="1">
+            <title>${a.id} (${a.type}) &#10;Readiness: ${Math.round(a.readiness * 100)}% &#10;Fuel: ${Math.round(a.fuel * 100)}% &#10;Status: ${a.status} &#10;Turnaround: ${a.turnaround}h</title>
+          </circle>
+        `;
+      });
+
+      h += `
+        <text x="16" y="302" font-size="9" fill="#94a3b8" font-family="JetBrains Mono">
+          ● GREEN: Idle Ready  ● BLUE: Tasked  ● RED: Unavailable/Maintenance  ■ SQUARE: Task (Priority 1-5)  [SYNTHETIC GRID]
+        </text>
+      `;
+      $('map').innerHTML = h;
+    }
+
+    function dCf() {
+      const c = S.o.conflicts;
+      $('cf-badge').innerText = c.length ? `${c.length} CRITICAL` : 'CLEAR';
+      $('cf-badge').className = 'badge ' + (c.length ? 'pill-danger' : 'pill-success');
+      $('cf').innerHTML = (c.length
+        ? c.map(x => `<div class="pill pill-danger" style="display:block;margin-bottom:6px;">✖ ${x}</div>`).join('')
+        : '<div class="pill pill-success" style="display:block;">✓ All constraints satisfied · Zero active conflicts</div>')
+        + (S.o.unassigned.length ? `<div class="pill pill-warning" style="display:block;margin-top:6px;">⚠ ${S.o.unassigned.length} task(s) unassigned due to resource constraints</div>` : '');
+
+      $('src').innerHTML = `
+        <div class="m mono" style="font-size:10px;margin-bottom:8px;">${S.fu.pipeline.join(' → ')}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          ${S.fu.sources.map(s => `
+            <div style="background:rgba(9,15,30,0.7);padding:6px;border-radius:4px;border:1px solid rgba(255,255,255,0.05);font-size:11px;">
+              <span class="g">●</span> ${s.name}<br>
+              <span class="m mono" style="font-size:10px;">${s.records} records · ONLINE</span>
+            </div>
+          `).join('')}
+        </div>
+        <div class="m mono" style="font-size:10px;margin-top:8px;">
+          Fusion Compute: ${S.fu.fused_ms}ms · Cross-source mismatches: ${S.fu.mismatches}
+        </div>
+      `;
+    }
+
+    function dTasks() {
+      const m = {};
+      S.o.assignments.forEach(a => m[a.task] = a);
+      $('task-badge').innerText = `${S.t.length} REGISTERED`;
+
+      $('tt').innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Task ID</th>
+              <th>Category</th>
+              <th>Priority</th>
+              <th>Sector</th>
+              <th>Status</th>
+              <th>Assigned Resource</th>
+              <th>Crew</th>
+              <th>Score</th>
+              <th>Deadline</th>
+              <th>Risk</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${S.t.slice().sort((a, b) => b.priority - a.priority).map(t => {
+              const a = m[t.id];
+              const isSel = selectedTask === t.id;
+              return `
+                <tr class="t ${isSel ? 'active-row' : ''}" onclick="selectTask('${t.id}')">
+                  <td class="mono"><b>${t.id}</b></td>
+                  <td>${t.category}</td>
+                  <td><span class="pill pill-warning">P${t.priority}</span></td>
+                  <td class="mono">${t.region}</td>
+                  <td><span class="pill ${a ? 'pill-success' : 'pill-danger'}">${a ? 'ASSIGNED' : 'UNASSIGNED'}</span></td>
+                  <td class="mono">${a ? `<span class="pill pill-info">${a.aircraft}</span>` : '—'}</td>
+                  <td class="mono">${a ? a.crew : '—'}</td>
+                  <td class="mono"><b>${a ? a.score : '—'}</b></td>
+                  <td class="mono">${t.deadline}h</td>
+                  <td class="mono">${Math.round(S.rk[t.region] * 100)}%</td>
+                  <td><button style="padding:2px 8px;font-size:10px;">Explain</button></td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function selectTask(id) {
+      selectedTask = id;
+      dTasks();
+      exp(id);
+    }
+
+    async function exp(id) {
+      selectedTask = id;
+      try {
+        const r = await fetch(A + '/recommendations/' + id);
+        if (!r.ok) {
+          const u = S.o.unassigned.find(x => x.task === id);
+          $('ex').innerHTML = `
+            <div class="pill pill-danger" style="margin-bottom:8px;">UNASSIGNED TASK: ${id}</div>
+            <p style="margin-bottom:8px;"><b>${u ? u.message : 'No feasible allocation found'}</b></p>
+            <div class="diff-box">
+              <b>Blocking Hard Constraints:</b><br>
+              ${u && u.blocked_by && Object.keys(u.blocked_by).length ? 
+                Object.entries(u.blocked_by).map(([k, v]) => `• ${k}: ${v} candidate resources blocked`).join('<br>') 
+                : '• No candidate resource satisfies operational constraints and deadlines'}
+            </div>
+          `;
+          return;
+        }
+
+        const a = await r.json(),
+              pos = a.reason.filter(x => x.startsWith('+')),
+              neg = a.reason.filter(x => x.startsWith('-') || x.startsWith('Next'));
+
+        $('ex').innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span class="pill pill-info" style="font-size:12px;">RECOMMENDED: ${a.aircraft}</span>
+            <span class="pill pill-success mono">CONFIDENCE: ${Math.round(a.confidence * 100)}%</span>
+          </div>
+          <div class="mono" style="font-size:11px;margin-bottom:10px;">
+            Task: <b>${id}</b> · Crew: <b>${a.crew}</b> · ETA: <b>${a.eta}h</b> · Score: <b class="g">${a.score}</b>
+          </div>
+
+          <div style="margin-bottom:10px;">
+            <h4 style="font-size:11px;color:var(--success);text-transform:uppercase;margin-bottom:4px;">Positive Factors</h4>
+            ${pos.map(x => `<div class="g" style="font-size:11px;margin-bottom:2px;">✓ ${x.slice(2)}</div>`).join('')}
+          </div>
+
+          ${neg.length ? `
+            <div style="margin-bottom:10px;">
+              <h4 style="font-size:11px;color:var(--warning);text-transform:uppercase;margin-bottom:4px;">Trade-offs &amp; Risk Penalties</h4>
+              ${neg.map(x => `<div class="y" style="font-size:11px;margin-bottom:2px;">⚠ ${x.slice(2)}</div>`).join('')}
+            </div>
+          ` : ''}
+
+          <div style="margin-bottom:10px;">
+            <h4 style="font-size:11px;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Hard Constraints Verified</h4>
+            ${a.constraints.map(c => `<div class="g" style="font-size:10px;">✔ ${c}</div>`).join('')}
+          </div>
+
+          <div style="margin-bottom:10px;">
+            <h4 style="font-size:11px;color:var(--primary);text-transform:uppercase;margin-bottom:4px;">Alternative Candidates Evaluated</h4>
+            ${a.alternatives.length ? a.alternatives.map(x => `
+              <div style="font-size:11px;margin-bottom:3px;">
+                <b class="mono">${x.aircraft}</b> (Score ${x.score}) <span class="m">– ${x.why}</span>
+              </div>
+            `).join('') : '<span class="m">No other feasible candidate resource available</span>'}
+          </div>
+
+          <div class="diff-box">
+            <b style="color:var(--primary);">Score Components Breakdown:</b><br>
+            <span class="mono m">${Object.entries(a.components).map(([k, v]) => `${k}: ${v}`).join(' · ')}</span>
+          </div>
+        `;
+      } catch (err) {
+        $('ex').innerHTML = `<span class="r">Error retrieving recommendation for ${id}: ${err.message}</span>`;
+      }
+    }
+
+    // Dynamic Retasking visual stages
+    function dRet() {
+      const r = S.au.find(a => a.steps);
+      if (!r) {
+        $('rt').innerHTML = '<span class="m">No retasking event yet — trigger one above or launch the Demo Scenario.</span>';
+        return;
+      }
+      const ch = r.changes || [],
+            cf = r.conflicts_detected || [],
+            d = (r.score - r.prev_score).toFixed(3);
+
+      $('rt').innerHTML = `
+        <div class="pipe">
+          <div id="st-1"><b>1 EVENT DETECTED</b>${r.event}<br><span class="m mono">${r.ts}</span></div>
+          <div id="st-2"><b>2 IMPACT ANALYSIS</b>${ch.length} task(s) affected<br>${ch.map(c => c.task).join(', ') || 'None'}</div>
+          <div id="st-3"><b>3 CONFLICT DETECTED</b>${cf.length ? cf.map(c => `<span class="r">${c}</span>`).join('<br>') : '<span class="g">None</span>'}</div>
+          <div id="st-4"><b>4 RE-OPTIMIZATION</b>Score ${r.prev_score} → ${r.score}<br>Δ ${d}</div>
+          <div id="st-5"><b>5 NEW ALLOCATION</b>${r.status}<br>${ch.length} reassignment(s)</div>
+          <div id="st-6"><b>6 AUDIT RECORD</b>Decision committed to SQLite audit log</div>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Task</th><th>Previous Resource</th><th>New Reallocation</th><th>Decision Rationale</th></tr>
+          </thead>
+          <tbody>
+            ${ch.map(c => `
+              <tr>
+                <td class="mono"><b>${c.task}</b></td>
+                <td class="mono">${c.before || '—'}</td>
+                <td class="mono"><b class="g">${c.after || 'NONE'}</b></td>
+                <td class="m" style="font-size:11px;">${(c.reason || []).slice(0, 3).join(' | ')}</td>
+              </tr>
+            `).join('') || '<tr><td colspan="4" class="m">No reallocation required for this event</td></tr>'}
+          </tbody>
+        </table>
+      `;
+    }
+
+    const bars = (v, l, c, mx) => {
+      mx = mx || Math.max(...v, 1);
+      const w = 200 / v.length;
+      return `
+        <svg viewBox="0 0 200 90" width="100%">
+          ${v.map((x, i) => {
+            const h = 60 * x / mx;
+            return `
+              <rect x="${i * w + 2}" y="${70 - h}" width="${w - 4}" height="${h}" rx="2" fill="${Array.isArray(c) ? c[i] : c}"/>
+              <text x="${i * w + w / 2}" y="${66 - h}" font-size="7" fill="#e2e8f0" font-family="JetBrains Mono" text-anchor="middle">${x % 1 ? x.toFixed(2) : x}</text>
+              <text x="${i * w + w / 2}" y="85" font-size="7" fill="#8494b0" font-family="JetBrains Mono" text-anchor="middle">${l[i]}</text>
+            `;
+          }).join('')}
+        </svg>
+      `;
+    };
+
+    const line = v => {
+      if (v.length < 2) return '<span class="m mono" style="font-size:11px;">Awaiting more historical optimization points...</span>';
+      const mx = Math.max(...v), mn = Math.min(...v), sc = x => 68 - 54 * ((x - mn) / ((mx - mn) || 1));
+      return `
+        <svg viewBox="0 0 200 90" width="100%">
+          <polyline fill="none" stroke="#38bdf8" stroke-width="2" points="${v.map((x, i) => `${8 + i * 184 / (v.length - 1)},${sc(x)}`).join(' ')}"/>
+          <text x="4" y="86" font-size="7" fill="#8494b0" font-family="JetBrains Mono">min ${mn.toFixed(2)} · max ${mx.toFixed(2)} · now ${v[v.length - 1].toFixed(2)}</text>
+        </svg>
+      `;
+    };
+
+    function dCharts() {
+      const used = new Set(S.o.assignments.map(a => a.aircraft));
+      $('c1').innerHTML = bars(
+        TY.map(t => {
+          const x = S.ac.filter(a => a.type === t);
+          return x.filter(a => used.has(a.id)).length / x.length;
+        }),
+        TY.map(t => t.slice(0, 5)),
+        '#38bdf8',
+        1
+      );
+
+      const bins = [0.5, 0.6, 0.7, 0.8, 0.9];
+      $('c2').innerHTML = bars(
+        bins.map(b => S.ac.filter(a => a.readiness >= b && a.readiness < b + 0.1 + (b === 0.9 ? 0.01 : 0)).length),
+        bins.map(b => Math.round(b * 100) + '+'),
+        '#10b981'
+      );
+
+      $('c3').innerHTML = bars(
+        [1, 2, 3, 4, 5].map(p => S.t.filter(t => t.priority === p).length),
+        ['P1', 'P2', 'P3', 'P4', 'P5'],
+        '#f59e0b'
+      );
+
+      $('c4').innerHTML = line(S.s.history.map(h => h.score));
+    }
+
+    function dBA() {
+      if (!base) {
+        $('ba').innerHTML = '<span class="m">Run optimization or launch the Demo Scenario to view baseline comparison.</span>';
+        return;
+      }
+      const k = kp();
+      $('ba').innerHTML = `
+        <table>
+          <thead>
+            <tr><th>Metric</th><th>Before</th><th>Now</th><th>Δ Delta</th></tr>
+          </thead>
+          <tbody>
+            ${Object.keys(NM).map(x => {
+              const d = k[x] - base[x],
+                    good = (x === 'un' || x === 'cf') ? d < 0 : d > 0;
+              return `
+                <tr>
+                  <td>${NM[x]}</td>
+                  <td class="mono">${f(x, base[x])}</td>
+                  <td class="mono"><b>${f(x, k[x])}</b></td>
+                  <td class="mono ${d === 0 ? 'm' : good ? 'g' : 'r'}">
+                    ${d > 0 ? '+' : ''}${x === 'util' ? Math.round(d * 100) + '%' : +d.toFixed(2)}
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+        <div style="margin-top:8px;">
+          ${bars(
+            [base.util, k.util, base.assigned / base.tasks, k.assigned / k.tasks],
+            ['util B', 'util N', 'compl B', 'compl N'],
+            ['#64748b', '#38bdf8', '#64748b', '#10b981'],
+            1
+          )}
+        </div>
+      `;
+    }
+
+    function dPred() {
+      const p = S.pr, col = {LOW: '#10b981', MEDIUM: '#f59e0b', HIGH: '#f43f5e'};
+      const fi = p[0].factors;
+      $('pr').innerHTML = `
+        <div style="margin-bottom:8px;">
+          ${bars(p.map(x => x.predicted), p.map(x => x.id.slice(2)), p.map(x => col[x.risk]), 1)}
+        </div>
+        <table>
+          <thead>
+            <tr><th>Aircraft</th><th>Predicted</th><th>Confidence</th><th>Risk Class</th></tr>
+          </thead>
+          <tbody>
+            ${p.slice().sort((a, b) => a.predicted - b.predicted).slice(0, 4).map(x => `
+              <tr>
+                <td class="mono"><b>${x.id}</b></td>
+                <td class="mono">${Math.round(x.predicted * 100)}%</td>
+                <td class="mono">${Math.round(x.confidence * 100)}%</td>
+                <td><span class="pill" style="background:${col[x.risk]}22;color:${col[x.risk]};border:1px solid ${col[x.risk]}">${x.risk}</span></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <div style="margin-top:8px;">
+          <h4 style="font-size:11px;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;">Model Feature Importance (Random Forest)</h4>
+          ${bars(Object.values(fi), ['hours', 'util', 'down', 'fail', 'ready'], '#818cf8')}
+        </div>
+      `;
+    }
+
+    function dAn() {
+      $('an').innerHTML = S.an.length ? `
+        <table>
+          <thead>
+            <tr><th>Detector</th><th>Resource</th><th>Severity</th><th>Time</th><th>Technical Explanation</th></tr>
+          </thead>
+          <tbody>
+            ${S.an.map(a => `
+              <tr>
+                <td>${a.type}</td>
+                <td class="mono"><b>${a.resource}</b></td>
+                <td><span class="pill ${a.severity === 'HIGH' ? 'pill-danger' : 'pill-warning'}">${a.severity}</span></td>
+                <td class="mono m">${a.ts}</td>
+                <td class="m" style="font-size:11px;">${a.explanation}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      ` : '<div class="pill pill-success" style="display:block;">✓ Zero statistical anomalies or source inconsistencies detected</div>';
+    }
+
+    function dAu() {
+      $('au').innerHTML = S.au.slice(0, 10).map(a => {
+        const st = a.steps || [a.event, 'Optimizer executed', ...(a.changes || []).map(c => `${c.task} reassigned ${c.after || 'NONE'}`), 'Decision recorded'];
+        return st.map((s, i) => `
+          <div class="${i ? '' : 'e'}">
+            <span class="m mono" style="font-size:10px;">${a.ts}</span>
+            <span style="font-size:11px;">${s}</span>
+            ${i ? '' : `<span class="m mono" style="font-size:10px;">· score ${a.score} · ${a.status}</span>`}
+          </div>
+        `).join('');
+      }).join('');
+
+      $('ev').innerHTML = S.ev.length ? S.ev.slice(0, 10).map(e => `
+        <div style="margin-bottom:6px;font-size:11px;">
+          <span class="m mono">${e.ts}</span>
+          <span class="pill pill-info">${e.kind}</span>
+          <span>${e.detail}</span>
+        </div>
+      `).join('') : '<span class="m">No events recorded yet.</span>';
+    }
+
+    async function run() {
+      const pre = kp();
+      banner('RUNNING MULTI-CRITERIA OPTIMISER (HUNGARIAN ALGORITHM)…');
+      try {
+        const r = await P('/optimization/run', W);
+        base = pre;
+        await refresh();
+        const c = r.compare;
+        $('cmp').innerHTML = `
+          <b style="color:var(--primary);">Allocation Delta:</b><br>
+          • Changed Assignments: <b>${c.changed.length}</b><br>
+          • Score: ${c.before.score} → <b>${c.after.score}</b><br>
+          • Resource Utilisation: ${Math.round(c.before.utilization * 100)}% → <b>${Math.round(c.after.utilization * 100)}%</b><br>
+          • Unassigned Tasks: ${c.before.unassigned} → <b>${c.after.unassigned}</b><br>
+          ${c.changed.map(x => `<div class="m mono" style="font-size:10px;">${x.task}: ${x.before || '—'} → ${x.after || 'NONE'}</div>`).join('')}
+        `;
+        banner('');
+      } catch (err) {
+        banner('Optimization failed: ' + err.message, 'bad');
+      }
+    }
+
+    async function gen() {
+      base = kp();
+      banner('APPLYING OPERATIONAL DISRUPTION…');
+      try {
+        await P('/events', {kind: $('ek').value});
+        await refresh();
+        banner('');
+      } catch (err) {
+        banner('Event generation failed: ' + err.message, 'bad');
+      }
+    }
+
+    async function sim(a) {
+      try {
+        await P('/simulation/' + a);
+        if (a === 'reset') {
+          base = null;
+          $('cmp').innerHTML = '<span class="m">System reset to baseline state.</span>';
+          $('ex').innerHTML = 'Click any task in the allocation table to inspect AI factors, constraints, and alternatives.';
+        }
+        await refresh();
+      } catch (err) {
+        banner(`Simulation ${a} failed: ` + err.message, 'bad');
+      }
+    }
+
+    // Real Backend-Driven Deterministic Demo Flow
+    async function demo() {
+      if (busy) return;
+      busy = true;
+      $('btn-run-demo').disabled = true;
+      $('cmp').innerHTML = '';
+      
+      banner('STAGE 1/10: INITIALIZING BASELINE STATE VIA ENGINE API…');
+      await P('/simulation/pause');
+      await P('/simulation/reset');
+      base = null;
+      await sleep(1000);
+
+      banner('STAGE 2/10: COMPUTING INITIAL BASELINE OPTIMIZATION…');
+      await P('/optimization/run', W);
+      await refresh();
+      const b0 = kp();
+      await sleep(1800);
+
+      // Call the real backend demo API
+      banner('CALLING BACKEND DEMO ENGINE (POST /api/v1/demo/run)…');
+      const demoData = await P('/demo/run');
+      await refresh();
+      await sleep(1500);
+
+      // Step through the actual engine demo stages
+      const stages = [
+        {name: 'STAGE 3-5: DISRUPTION · PRIMARY AIRCRAFT UNAVAILABLE', step: demoData.steps[0]},
+        {name: 'STAGE 6-7: DISRUPTION · SEVERE WEATHER CLOSES SECTOR', step: demoData.steps[1]},
+        {name: 'STAGE 8-9: DISRUPTION · CRITICAL PRIORITY-5 TASK ARRIVAL', step: demoData.steps[2]}
+      ];
+
+      for (const st of stages) {
+        banner(st.name + ' · ' + st.step.event, 'bad');
+        await sleep(1800);
+
+        if ((st.step.conflicts_detected || []).length) {
+          banner('CONFLICT DETECTED: ' + st.step.conflicts_detected[0], 'bad');
+          await sleep(2000);
+        }
+
+        banner(`RE-OPTIMIZATION COMPLETE: ${st.step.changes.length} REASSIGNMENT(S) · SCORE ${st.step.prev_score} → ${st.step.result.score}`, 'ok');
+        await refresh();
+        await sleep(2200);
+      }
+
+      base = b0;
+      await refresh();
+      banner('STAGE 10/10: DYNAMIC RETASKING COMPLETE · FINAL OPERATIONAL STATE ACTIVE', 'ok');
+      $('btn-run-demo').disabled = false;
+      busy = false;
+    }
+
+    // Auto-refresh loop
+    refresh();
+    setInterval(() => {
+      if (!busy) refresh();
+    }, 4000);
+  </script>
+</body>
+</html>
